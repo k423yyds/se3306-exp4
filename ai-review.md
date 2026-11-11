@@ -54,4 +54,4 @@
 
 代码符合指导书任务一至六的要求：组件拆分合理（`PostItem` 只渲染与上抛事件，不持有业务状态）、状态单一来源（点赞与浏览只在 store 中维护）、通信方式齐全（props/emits、provide/inject、插槽均有实际用例）、路由与守卫职责清晰、三态闭环完整（加载/失败/重试/恢复）、持久化边界正确（只存业务字段）。类型检查、lint、构建、生产预览全部通过，运行验证证据齐全（23 张截图 + 构建日志）。
 
-待办：部署（"尤佳"）未做，如后续需要，可直接把 `dist` 目录部署到任意静态托管平台。公开仓库：https://github.com/k423yyds/se3306-exp4 。
+部署（"尤佳"）已完成：GitHub Pages，线上 https://k423yyds.github.io/se3306-exp4/ ，`vite.config.ts` 的 base 与 `BASE_URL` 自动跟随子路径，深链接由 `dist/404.html` 兜底。公开仓库：https://github.com/k423yyds/se3306-exp4 。

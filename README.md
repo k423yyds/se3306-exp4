@@ -47,4 +47,5 @@ pnpm lint           # oxlint + eslint
 - 首页底部「模拟一次请求失败」用于复现任务六的错误态与重试，正式使用时可删除该按钮与 `simulateNextFailure`；
 - 换真实后端只需改 `src/api/posts.ts` 与 `stores/blog.ts` 的读写实现，页面与组件不用动；
 - 实验报告见 [`实验报告.md`](./实验报告.md)，AI 使用情况见 [`AI使用声明.md`](./AI使用声明.md)，代码自查见 [`ai-review.md`](./ai-review.md)；
-- 公开仓库：https://github.com/k423yyds/se3306-exp4 。
+- 公开仓库：https://github.com/k423yyds/se3306-exp4 ；
+- 线上地址：https://k423yyds.github.io/se3306-exp4/ （GitHub Pages，push 到 `master` 由 `.github/workflows/deploy.yml` 自动构建发布）。

@@ -42,6 +42,6 @@
 ## 四、声明
 
 - 任务一至六的全部代码均已在本机真实运行并通过自检，截图均为实际运行结果，无虚构；
-- 部署（指导书列为"尤佳"）未做，报告中已如实标注，仅完成本地 `pnpm preview` 生产预览验证；
-- 公开仓库已推送：https://github.com/k423yyds/se3306-exp4 （分支 master，4 次提交，含全部源码、23 张截图与四份文档）；
+- 部署（指导书列为"尤佳"）已完成：GitHub Pages 线上地址 https://k423yyds.github.io/se3306-exp4/ ，流水线为 `.github/workflows/deploy.yml`，线上三张截图均为实际访问结果；
+- 公开仓库已推送：https://github.com/k423yyds/se3306-exp4 （分支 master，含全部源码、26 张截图与四份文档）；
 - 以上内容如有不实，愿按课程规定接受处理。
