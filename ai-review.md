@@ -1,70 +1,57 @@
-# ai-review.md
+# ai-review.md：AI 审码记录
 
-对本次实验（Vue 3 博客迁移）做一次交付前自查，对照指导书的验收点逐条核验，并记录实际运行中发现的问题与处理。
+> 本文件是本次实验的代码自查记录。三件套 = 本文件 + `AI使用声明.md` + 运行/截图证据（`实验截图/`）。
 
-## 一、对照指导书验收点
+## 一、审查范围
 
-| 任务 | 指导书要求 | 实现位置 | 验证证据 | 结论 |
-| --- | --- | --- | --- | --- |
-| 任务一 | `pnpm dev` 正常，显示文章与点赞按钮 | `views/HomeView.vue`、`components/PostItem.vue` | 1.1_home.png | 通过 |
-| 任务一 | 点「点赞」数字加一 | `stores/blog.ts` → `likePost` | 1.2_liked.png | 通过 |
-| 任务一 | `PostItem` 接收 props，`Home` 用 `v-for` 渲染 | `PostItem.vue` props + `HomeView.vue` v-for | 1.1_home.png（6 张卡片同一模板） | 通过 |
-| 任务二 | 搜索词变化，列表即时过滤 | `keyword` + `computed(filtered)` | 2.1_search.png | 通过 |
-| 任务二 | 空结果出现空状态（`v-if`） | `EmptyState.vue` + `v-if` | 2.2_empty.png | 通过 |
-| 任务二 | 能解释 computed 与普通函数的区别 | 实验报告 5.2 节 | 报告正文 | 通过 |
-| 任务三 | 点赞按钮 `@click` 生效 | `PostItem` `@click="emit('like', post.id)"` | 1.2_liked.png | 通过 |
-| 任务三 | 计数存进 store 并 persist，刷新还在 | `persist.pick` 含 `likes/views/liked` | 3.1_persist.png（刷新后仍为 1） | 通过 |
-| 任务三 | 能说出点赞一次哪几处界面跟着变 | 实验报告 5.3 节 | 报告正文 | 通过 |
-| 任务四 | 列表点标题进详情，地址栏 `/posts/:id` | `router/index.ts` 动态路由 | 4.1_detail.png（`/posts/6`） | 通过 |
-| 任务四 | 刷新详情页不丢 | store 持久化 + 路由参数 | 3.1_persist.png | 通过 |
-| 任务四 | 乱输地址进 404 | `/:pathMatch(.*)*` → `NotFoundView` | 4.2_404.png（`/posthg`） | 通过 |
-| 任务五 | 空标题不能发布 | `PostNewView.vue` 校验 | 5.1_new_error.png | 通过 |
-| 任务五 | 发布后列表立刻出现新文章 | `addPost` + `router.push('/')` | 5.2_new_post.png（6→7 篇） | 通过 |
-| 任务五 | 评论即时显示，刷新后仍在 | `addComment` + `comments` 持久化 | 5.3、5.4 | 通过 |
-| 任务六 | 模拟接口 0.5~1 秒延迟 | `api/posts.ts` `sleep(500 + random*500)` | 6.1_loading.png | 通过 |
-| 任务六 | 加载中、成功、失败三种状态都有截图 | `status` 三态 | 6.1、6.2、6.3 | 通过 |
-| 任务六 | 失败点「重试」能恢复 | `ErrorState` `emit('retry')` → `reload()` | 6.3_retry_ok.png | 通过 |
-| 任务六 | 六步功能全部完成，可整体演示 | 全部页面 | 7.4_preview.png（生产预览） | 通过 |
-| 提交 | 源码 + README + 实验报告（截图、AI 声明） | 仓库根目录 | 文件清单 | 通过 |
-| 提交 | 部署（尤佳） | — | 未做，报告中已如实说明 | 未做 |
+审查覆盖任务一至六的全部源码：`src/views/`（Home、PostDetail、PostNew、About、NotFound）、`src/components/`（PostItem、CommentSection、LoadingState、ErrorState、EmptyState、AppHeader、AppFooter）、`src/stores/blog.ts`、`src/api/posts.ts`、`src/router/index.ts`、`src/App.vue`、`src/main.ts`、`src/assets/main.css`、`src/types.ts`、`public/posts.json` 以及配置文件（`vite.config.ts`、`tsconfig*.json`、`index.html`、`package.json`）。
 
-## 二、代码自查要点
+## 二、对照合格线逐条核对
 
-1. **响应式边界**：`PostItem` 中不解构 `props`，避免丢失响应性；`computed` 全部基于 `props.post` 读取。
-2. **状态单一来源**：点赞数只存在于 store 的 `likes`，组件不保存副本，所以列表卡片、hero 统计、详情页三处读到的是同一个值。
-3. **持久化字段收敛**：`persist.pick` 只保留业务数据（`posts/likes/views/liked/comments/loaded`），`status/errorText/loadingText` 不落盘，避免刷新后卡在 loading。
-4. **失败可复现且不污染**：失败开关 `failOnce` 只影响下一次请求，请求发出即复位，重试一定走正常地址。
-5. **远端与本地合并**：`reload()` 保留本地新增文章（按 id 判断），避免重新拉取接口后把自己发布的文章冲掉。
-6. **路由参数约束**：`:id(\\d+)` 只接受数字，`/posts/abc` 落到 404，而不是进入详情页显示空白。
-7. **守卫时机**：浏览量累加放在 `router.beforeEach`，刷新详情页也会执行，不会漏计。
-8. **构建可分块**：四个页面用 `() => import(...)` 懒加载，构建产物中各自成 chunk。
+| 合格线 | 核对结果 | 证据 |
+|---|---|---|
+| 能跑起来 | ✅ `pnpm dev`（5173）、`pnpm preview`（4173）均正常 | 1.1_env、7.4_preview |
+| 功能齐全：列表、搜索、详情、发布、评论、404 | ✅ 全部实现并实测 | 1.1_home、2.1_search、4.1_detail、5.2_new_post、5.3_comment、4.2_404 |
+| 每个页面都有交代：空态、加载态、错误态 | ✅ 空态（搜索无结果）、加载态（骨架屏）、错误态（重试卡片） | 2.2_empty、6.1_loading、6.2_error |
+| 子组件不直接改数据，事件上抛 | ✅ `PostItem` 只有 `emit('like')`，计数由 store 负责 | `PostItem.vue`、`blog.ts` |
+| 刷新不丢：点赞、浏览、评论、发布 | ✅ store `persist` 只存业务字段 | 3.1_persist、5.4_comment_persist |
+| 代码干净：类型清楚、控制台无报错、README 写清 | ✅ `vue-tsc` 0 错误、`lint` 0 warning 0 error、build 通过 | 7.4_build、README |
 
-## 三、实际运行验证
+## 三、diff 摘要（与指导书基础实现 / 实验三版本的差异）
 
-| 命令 | 结果 |
-| --- | --- |
-| `pnpm install` | 依赖安装成功（pinia 4.1.0 / vue 3.5.45 / vue-router 5.4.0 / axios 1.21.1） |
-| `pnpm type-check` | `vue-tsc --build` 无输出，退出码 0 |
-| `pnpm lint` | `Found 0 warnings and 0 errors.`，eslint 无输出 |
-| `pnpm dev --port 5173` | `VITE v8.3.7 ready in 629 ms`，HTTP 200 |
-| `pnpm build` | `✓ 124 modules transformed`，`✓ built in 537ms`，退出码 0 |
-| `pnpm preview --port 4173` | 生产产物可正常访问，页面与开发环境一致 |
+1. **数据来源**：指导书示例用内存数组或组件内 `ref`；本项目把数据放在 `public/posts.json`，用 Axios 真实请求并通过 `sleep` 模拟 0.5~1 秒延迟，更贴近任务六的"接口"语境。
+2. **持久化范围**：只持久化 `posts / likes / views / liked / comments / loaded`，运行时状态（`status` / `errorText` / `loadingText`）不落盘，避免刷新后卡在加载或错误状态。
+3. **浏览量位置**：指导书未规定实现位置；本项目放在 `router.beforeEach`，覆盖刷新、直达、跳转三种入口，而不是写在详情组件里。
+4. **远端与本地合并**：`reload()` 保留"远端不存在、本地新增"的文章，避免重新拉取接口后把用户发布的文章冲掉（这是指导书示例没有考虑的场景）。
+5. **路由参数约束**：`:id(\\d+)` 只接受数字，`/posts/abc` 落到 404，而不是进入详情页显示空白。
+6. **界面**：在指导书基础样式上做了卡片风格美化（浅灰背景、白色卡片、indigo 主色、胶囊分类），与实验二、实验三保持一致。
 
-浏览器端逐项操作（Chrome）：点赞 → 刷新；搜索「缓存」→ 搜「量子力学」；进入 `/posts/6`；访问 `/posthg`；空标题提交；发布新文章；发表评论 → 刷新；点「重新载入」；点「模拟一次请求失败」→ 点「重试」。
+## 四、运行验证记录
 
-## 四、发现的问题与处理
+| 验证项 | 命令/操作 | 结果 |
+|---|---|---|
+| 依赖安装 | `pnpm install` | ✅ 296 个包安装成功 |
+| 开发服务器 | `pnpm dev`（端口 5173） | ✅ `ready`，页面正常，热更新生效 |
+| 类型检查 | `pnpm type-check`（`vue-tsc --build`） | ✅ 无输出，退出码 0 |
+| Lint | `pnpm lint`（oxlint + eslint） | ✅ `Found 0 warnings and 0 errors.` |
+| 生产构建 | `pnpm build` | ✅ 124 个模块，473ms，四个页面独立 chunk |
+| 生产预览 | `pnpm preview`（端口 4173） | ✅ 首页、详情、关于、404 均可访问 |
+| 功能自检 | 浏览器逐项 | ✅ 点赞→刷新、搜索→空态、详情→404、发布→评论→刷新、加载→失败→重试（截图 23 张见 `实验截图/`） |
 
-| 序号 | 现象 | 原因 | 处理 |
-| --- | --- | --- | --- |
-| 1 | 打开 `/posts/6` 时页面停在首页，控制台报 `Failed to fetch dynamically imported module`，开发服务器返回 500 | `PostDetailView.vue` 模板里 `<section>` 被写成了结束标签 `</article>`，Vue 编译器报 `Invalid end tag` | 改为 `</section>`，重新编译后详情页正常 |
-| 2 | 点赞后刷新页面，按钮状态丢失（首版） | 只把计数写进组件内的 `ref`，没有进 store，也没有持久化 | 计数统一放进 Pinia store，并开启 `persist` |
-| 3 | 重新拉取接口后，自己发布的文章被覆盖 | `reload()` 直接用远端数据整体替换 `posts` | 改为「远端数据 + 本地新增（id 不在远端中）」合并 |
-| 4 | 直接刷新详情页时浏览量不增加 | 浏览量写在详情组件里，刷新时组件尚未挂载 | 移到 `router.beforeEach`，导航发生时累加 |
-| 5 | `pnpm` 命令在终端中不可用 | 当前终端 `PATH` 未包含全局 npm bin 目录 | 使用 `C:\Users\cyj\AppData\Roaming\npm\pnpm.cmd` 绝对路径执行，功能不受影响 |
-| 6 | 首页每次进入都闪一下「文章不存在」 | 首次进入时 `status` 还是 `idle`，`post` 为空 | 模板条件改为「未加载完成时显示 loading」，仅 `ready` 且找不到才提示不存在 |
+## 五、审查发现的问题与处理
 
-## 五、遗留与说明
+| 问题 | 处理 |
+|---|---|
+| 详情页 500，报 `Invalid end tag`，动态导入模块加载失败 | `PostDetailView.vue` 的 `<section>` 结束标签误写成 `</article>`，改为 `</section>` 后恢复 |
+| 解构 `props` 后点赞数字不刷新 | 改为直接读 `props.post`，保持属性访问链，响应式追踪不中断 |
+| 首版点赞刷新丢失 | 计数从组件内 `ref` 迁到 Pinia store，并开启 `persist` |
+| 重新拉取接口后，自己发布的文章被覆盖 | `reload()` 改为「远端数据 + 本地新增（id 不在远端中）」合并 |
+| 直接刷新详情页浏览量不增加 | 浏览量从详情组件移到 `router.beforeEach` |
+| 首次进入详情闪一下"文章不存在" | 模板条件改为「未加载完成时显示 loading」，仅 `ready` 且找不到才提示不存在 |
+| 终端 `pnpm` 命令不可用（PATH 未包含全局 npm bin） | 使用 `C:\Users\cyj\AppData\Roaming\npm\pnpm.cmd` 绝对路径执行，功能不受影响 |
 
-1. 指导书把「部署」列为「尤佳」，本次未做线上部署，只验证了本地生产预览（`pnpm preview`）。
-2. 数据存放在浏览器 `localStorage`，换浏览器或清空缓存后回到初始 6 篇文章，属于预期行为。
-3. 首页底部保留「模拟一次请求失败」入口，用于复现任务六的失败态，正式使用时可删除该按钮与 `simulateNextFailure`。
+## 六、审查结论
+
+代码符合指导书任务一至六的要求：组件拆分合理（`PostItem` 只渲染与上抛事件，不持有业务状态）、状态单一来源（点赞与浏览只在 store 中维护）、通信方式齐全（props/emits、provide/inject、插槽均有实际用例）、路由与守卫职责清晰、三态闭环完整（加载/失败/重试/恢复）、持久化边界正确（只存业务字段）。类型检查、lint、构建、生产预览全部通过，运行验证证据齐全（23 张截图 + 构建日志）。
+
+待办：Gitee 公开仓库推送（需仓库地址与授权）；部署（"尤佳"）未做，如后续需要，可直接把 `dist` 目录部署到任意静态托管平台。

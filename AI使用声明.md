@@ -1,42 +1,47 @@
 # AI 使用声明
 
-## 一、使用的 AI 工具
+本实验使用 AI 工具（豆包）辅助完成，遵循指导书的 AI 使用规范。现如实声明如下：
 
-| 工具 | 用途 |
-| --- | --- |
-| 豆包（Doubao）工作模式 | 项目脚手架搭建、代码生成与修改、报错排查、报告与文档整理 |
+## 一、AI 使用范围
 
-使用方式为对话式协作：由本人提出每一步的需求与验收标准，AI 给出可直接运行的代码与命令，本人执行、观察结果并提出修改意见。
+| 用途 | 具体内容 |
+|---|---|
+| 概念解释 | 组合式 API（`ref` / `reactive` / `computed` / `watch`）、单文件组件、组件通信（props / emits / provide / inject / 插槽）、Vue Router 动态路由与守卫、Pinia 与持久化、Axios 三态封装等机制讲解 |
+| 报错排查 | Vue 单文件组件「Invalid end tag」（`<section>` 被写成 `</article>`）导致详情页 500 与动态模块加载失败；解构 `props` 丢失响应性；刷新详情页浏览量漏计；远端数据覆盖本地新增文章 |
+| 代码生成 | 任务一至六的代码按指导书的关键代码组织方式生成（组件拆分、store、api、路由、三态组件），并在此基础上做界面美化 |
+| 运行与验证 | 由本人在本机安装依赖、启动 dev、逐任务在浏览器自检、执行 `pnpm type-check` / `pnpm lint` / `pnpm build` / `pnpm preview` 并截图 |
 
-## 二、AI 参与的范围
+## 二、使用 AI 生成整模块代码的清单
 
-| 模块 / 文件 | AI 参与方式 | 说明 |
-| --- | --- | --- |
-| `package.json`、`vite.config.ts`、`tsconfig*.json` | 生成 + 配置 | 由 `create-vue` 脚手架生成，AI 协助删除开发工具插件、调整项目配置 |
-| `src/stores/blog.ts` | 生成 | Pinia setup store：文章、点赞、浏览量、评论、三态加载、持久化字段 |
-| `src/api/posts.ts` | 生成 | Axios 实例、0.5~1 秒延迟模拟、失败开关 |
-| `src/router/index.ts` | 生成 | 路由表、`/posts/:id(\\d+)` 参数约束、`beforeEach` 守卫计浏览量 |
-| `src/components/PostItem.vue` | 生成 | props 定义、`emit` 点赞事件、摘要 computed、卡片样式 |
-| `src/components/CommentSection.vue` | 生成 | 评论列表、表单校验、写入 store |
-| `src/components/LoadingState.vue`、`ErrorState.vue`、`EmptyState.vue` | 生成 | 三态与空状态组件，`ErrorState` 通过 `emit` 暴露重试 |
-| `src/components/AppHeader.vue`、`AppFooter.vue` | 生成 | 导航与页脚，页脚通过 `inject` 读取站点信息 |
-| `src/views/*.vue` | 生成 | 首页（搜索、分类、三态）、详情、发布、关于、404 |
-| `src/App.vue`、`src/main.ts`、`src/assets/main.css` | 生成 | 布局外壳、`provide`、Pinia 注册、全局设计变量 |
-| `public/posts.json` | 生成 | 6 篇初始文章数据 |
-| `README.md`、`实验报告.md`、`ai-review.md`、本声明 | AI 起草 + 本人校对 | 报告中的截图与命令输出均来自实际运行 |
-| 截图 | 本人操作 | 用浏览器逐页操作并截取页面内容 |
+按指导书要求，列出 AI 生成（或大幅协助生成）的模块：
+
+| 模块/文件 | 说明 |
+|---|---|
+| `src/types.ts`、`src/api/posts.ts` | 类型定义与请求层（延迟模拟 + 一次性失败开关） |
+| `src/stores/blog.ts` | Pinia setup store：文章、点赞、浏览、评论、三态、持久化 |
+| `src/router/index.ts` | 路由表、参数正则约束、兜底 404、`beforeEach` 计浏览量 |
+| `src/components/PostItem.vue` | 文章卡片，`defineProps` + `defineEmits`（任务一、三） |
+| `src/components/CommentSection.vue` | 评论区列表与表单（任务五） |
+| `src/components/LoadingState.vue`、`ErrorState.vue`、`EmptyState.vue` | 三态与空状态组件（任务二、六） |
+| `src/components/AppHeader.vue`、`AppFooter.vue` | 导航与页脚，页脚用 `inject` 读取 `provide` 的站点信息 |
+| `src/views/HomeView.vue`、`PostDetailView.vue`、`PostNewView.vue`、`AboutView.vue`、`NotFoundView.vue` | 五个页面（任务一至六） |
+| `src/App.vue`、`src/main.ts`、`src/assets/main.css` | 布局外壳、Pinia 注册、全局设计变量 |
+| `public/posts.json` | 6 篇初始文章数据 |
+| `README.md`、`实验报告.md`、`ai-review.md`、本声明 | AI 起草 + 本人校对，截图与命令输出均来自实际运行 |
+| 全部页面的样式 | 实验二、三风格的卡片美化（indigo 主色、圆角卡片、胶囊按钮） |
 
 ## 三、本人自行完成的工作
 
-1. 按指导书逐条确认六个任务的验收标准，并检查 AI 给出的实现是否覆盖（列表、搜索、点赞持久化、详情路由、发布评论、加载三态）。
-2. 在本机执行 `pnpm install`、`pnpm dev`、`pnpm build`、`pnpm lint`、`pnpm preview`，逐条验证运行结果。
-3. 在浏览器中逐项操作六个功能并截图：点赞后刷新、搜索与空结果、详情与 404、发布与评论、加载中/失败/重试。
-4. 校对报告中的命令输出、版本号与截图引用，确认与实际运行一致。
-5. 完成实验体会与自查清单的最终确认。
+- 环境安装与配置：Node.js / pnpm 版本核对、`pnpm install` 依赖安装（含 `pinia-plugin-persistedstate`、`axios`）；
+- 全程运行验证：`pnpm dev` 启动，逐任务在浏览器自检（点赞与刷新、搜索与空态、详情与 404、发布与评论、加载中/失败/重试、关于页）；
+- 截图：按实验二要求只截页面内容，任务一至六验证图与最终成品图共 23 张；
+- 界面美化方案确认与微调（配色、卡片、按钮样式）；
+- Git 提交管理（`feat:` / `docs:` 提交信息成体系）；
+- 本报告的撰写与数据核对（版本号、构建输出、截图引用逐条核对）。
 
 ## 四、声明
 
-1. 本实验的源代码由 AI 辅助生成，本人已完整阅读、运行并验证，能够说明主要模块的职责与关键实现思路。
-2. 报告中所有截图、构建日志与运行结果均来自本机实际运行，未使用伪造数据。
-3. 涉及 Vue 3、Vue Router、Pinia 的用法参考官方文档（cn.vuejs.org、router.vuejs.org、pinia.vuejs.org），未直接复制他人项目代码。
-4. 若后续对代码有修改，会在提交记录中如实体现，不将他人成果记为本人独立完成。
+- 任务一至六的全部代码均已在本机真实运行并通过自检，截图均为实际运行结果，无虚构；
+- 部署（指导书列为"尤佳"）未做，报告中已如实标注，仅完成本地 `pnpm preview` 生产预览验证；
+- Gitee 公开仓库已在本地完成 git 提交，待推送；
+- 以上内容如有不实，愿按课程规定接受处理。
