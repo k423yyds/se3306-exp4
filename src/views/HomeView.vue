@@ -285,6 +285,8 @@ function simulateFailure() {
   background: transparent;
   color: #7c7f93;
   font-size: 12px;
+  padding: 6px 10px;
+  margin: -6px -10px;
   text-decoration: underline;
   cursor: pointer;
 }
